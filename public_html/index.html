@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script  type="text/javascript" src="js/jquery.min.js"></script>
+        <script  type="text/javascript" src="js/jquery.cookie.js"></script>
+        <script  type="text/javascript" src="js/QuadTree.js"></script>
+        <script  type="text/javascript" src="js/poko_lib.js"></script>
+        <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    </head>
+    <body>
+        <div id="content">
+            <div id="canvasWrapper">
+                <img src="images/logo.png" alt="logo"/>
+                <table class="arrows" >
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input type="button" value="Start" id="buttonStart"/>
+                            </td>
+                            <td></td>
+                            <td>
+                                <input type="button" value="Reset" id="buttonReset"/>
+                            </td>
+                            <td></td>
+                            <td>
+                                <span>Lvl.</span>
+                                <strong id="currLevel">1</strong>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td><img class="arrow" id="ARROW_LEFT" src="images/arrow_left.png" alt=""/></td>
+                            <td id="arrowsLeft">0</td>
+                            <td><img class="arrow" id="ARROW_RIGHT" src="images/arrow_right.png" alt=""/></td>
+                            <td id="arrowsRight">0</td>
+                            <td><img class="arrow" id="ARROW_UP" src="images/arrow_top.png" alt=""/></td>
+                            <td id="arrowsUp">0</td>
+                            <td><img class="arrow" id="ARROW_BOTTOM" src="images/arrow_bottom.png" alt=""/></td>
+                            <td id="arrowsDown">0</td>
+                            <td><img class="arrow" id="ARROW_REVERSED" src="images/arrow_reversed.png" alt=""/></td>
+                            <td id="arrowsReversed">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <canvas id="canvas" width="500" height="500"></canvas>
+
+            </div>
+        </div>
+        
+    </body>
+</html>

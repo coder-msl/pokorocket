@@ -1,0 +1,9 @@
+{
+    "xFields":15,
+    "yFields":15,
+    "mices":[{"x":4,"y":4,"direction":39},{"x":5,"y":5,"direction":39}],
+    "cats":[{"x":2,"y":2,"direction":39},{"x":4,"y":3,"direction":39}],
+    "rockets":[{"x":6,"y":5}],
+    "holes":[{"x":2,"y":3}],
+    "arrows":{"left":0,"right":0,"top":0,"bottom":1}
+}

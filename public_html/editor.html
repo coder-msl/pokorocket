@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script  type="text/javascript" src="js/jquery.min.js"></script>
+        <script  type="text/javascript" src="js/jquery.cookie.js"></script>
+        <script  type="text/javascript" src="js/QuadTree.js"></script>
+        <script  type="text/javascript" src="js/poko_lib.js"></script>
+        <script  type="text/javascript" src="js/editor.js"></script>
+        <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+        <link rel="stylesheet" href="css/editor.css" type="text/css" media="screen" />
+    </head>
+    <body>
+        <div id="content">
+            <div id="canvasWrapper">
+                <img src="images/logo.png" alt="logo"/>
+
+                <table class="arrows" >
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input type="button" value="Start" id="buttonStart"/>
+                            </td>
+                            <td></td>
+                            <td>
+                                <input type="button" value="Reset" id="buttonReset"/>
+                            </td>
+                            <td></td>
+                            <td>
+                                <span>Lvl.</span>
+                                <strong id="currLevel">editor</strong>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td><img class="arrow" id="ARROW_LEFT" src="images/arrow_left.png" alt=""/></td>
+                            <td id="arrowsLeft">0</td>
+                            <td><img class="arrow" id="ARROW_RIGHT" src="images/arrow_right.png" alt=""/></td>
+                            <td id="arrowsRight">0</td>
+                            <td><img class="arrow" id="ARROW_UP" src="images/arrow_top.png" alt=""/></td>
+                            <td id="arrowsUp">0</td>
+                            <td><img class="arrow" id="ARROW_BOTTOM" src="images/arrow_bottom.png" alt=""/></td>
+                            <td id="arrowsDown">0</td>
+                            <td><img class="arrow" id="ARROW_REVERSED" src="images/arrow_reversed.png" alt=""/></td>
+                            <td id="arrowsReversed">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="brushPicker" style="float: left;">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <a class="setBrush" rel="ARROW" href="#">
+                                    <img src="images/hand.png"/>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a class="setBrush" rel="HOLE" href="#">
+                                    <img src="images/Hole.png"/>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a class="setBrush" rel="ROCKET" href="#">
+                                    <img src="images/Rocket.png"/>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a class="setBrush" rel="MICE" href="#">
+                                    <img src="images/mice1.png"/>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a class="setBrush" rel="CAT" href="#">
+                                    <img src="images/cat-right.png"/>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a class="setBrush" rel="WALL" href="#">
+                                    <img src="images/wall.png"/>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a class="setBrush" rel="ARROW" href="#">
+                                    <img src="images/arrow.png"/>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a class="setBrush" rel="DELETE" href="#">
+                                    <img src="images/delete.png"/>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><button id="submitBtn"  disabled="disabled">Submit</button></td>
+                        </tr>
+                        <tr>
+                            <td><input id="width" class="boardDim"/>x<input id="height" class="boardDim"/></td>
+                        </tr>
+                        <tr>
+                            <td><button id="newmap" onclick="newmap()">New map</button></td>
+                        </tr>
+                    </tbody>
+                </table>                
+                <canvas id="canvas" width="500" height="500" style="float: left;"></canvas>
+            </div>
+        </div>
+        
+    </body>
+</html>
