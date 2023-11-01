@@ -12,5 +12,5 @@ This game was written originally by me (Mateusz Lach) and later my jounger broth
 
 # Play 
 
-Currently it's hosted only on GitHub Pages here https://hacker-msl.github.io/pokorocket/ 
+Currently it's hosted only on GitHub Pages here https://coder-msl.github.io/pokorocket/
 
