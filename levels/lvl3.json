@@ -1,22 +1,9 @@
 {
-    "xFields":5,
-    "yFields":5,
-    "mices":[{"x":9,"y":0,"direction":39}],
-    "cats":[{"x":7,"y":1,"direction":37}],
-    "rockets":[{"x":5,"y":4}],
-    "arrows":{"left":1,"right":1,"top":0,"bottom":0},
-    "horizontalWalls": [
-       [1, 1, 1, 1, 1],
-       [0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0],
-    ], 
-    "verticalWalls": [
-       [0, 1, 0, 0, 0],
-       [0, 0, 1, 0, 0],
-       [0, 0, 0, 1, 0],
-       [0, 0, 0, 0, 1],
-       [0, 0, 0, 0, 0],
-    ]    
+    "xFields":10,
+    "yFields":7,
+    "mices":[{"x":4,"y":4,"direction":39},{"x":5,"y":5,"direction":39}],
+    "cats":[{"x":2,"y":2,"direction":39},{"x":4,"y":3,"direction":39}],
+    "rockets":[{"x":6,"y":5}],
+    "holes":[{"x":2,"y":3}],
+    "arrows":{"left":0,"right":0,"top":0,"bottom":1}
 }

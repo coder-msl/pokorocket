@@ -16,6 +16,7 @@ body {
 }
 table.arrows {
     border-width: 0px;
+    margin: 0px auto 0px auto;
     padding: 0px; 
     width: 500px; 
     background-color: #c4ba62; 

@@ -1,38 +1,13 @@
-/*
- *  Copyright (C) <2013>  
- *  <Mateusz Sławomir Lach>
- *  <Sławomir Lach>
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 
 Object.prototype.inherit = function(baseClass)
 {
-    try
+    if(baseClass !== undefined)
     {
-        if(baseClass !== undefined)
+        tmpObj = new baseClass();
+        for(prop in tmpObj)
         {
-            tmpObj = new baseClass();
-            for(prop in tmpObj)
-            {
-                this[prop] = tmpObj[prop];
-            }
+            this[prop] = tmpObj[prop];
         }
-    }
-    catch(TypeError)
-    {
-        //do nothing, just trap for jQuery error
     }
 };
 Object.prototype.test = function() {};//dummy function 4 jQuery  to prevent errors
@@ -42,10 +17,8 @@ var PokoGame = {
     ARROW_UP    : 38,
     ARROW_RIGHT : 39,
     ARROW_BOTTOM: 40,
-    ARROW_REVERSED: 68,
     KEY_P: 80,
     KEY_R: 82,
-    KEY_DEL: 46,
     FIELD_TYPE_EMPTY : 0x0,
     FIELD_TYPE_ROCKET: 0x1,
     FIELD_TYPE_HOLE  : 0x2,
@@ -60,16 +33,8 @@ var PokoGame = {
     {
         PokoGame.ctx.clearRect(0,0, PokoGame.board.getWidth(), PokoGame.board.getHeight());
         PokoGame.board.draw();        
-    },
-    isOppositeDirectionToArrow: function(Arrow, Object)
-    {
-        return (Arrow.getType() === PokoGame.ARROW_LEFT && Object.getDirection() === PokoGame.ARROW_RIGHT)
-                 || (Arrow.getType() === PokoGame.ARROW_RIGHT && Object.getDirection() === PokoGame.ARROW_LEFT)
-                 || (Arrow.getType() === PokoGame.ARROW_UP && Object.getDirection() === PokoGame.ARROW_BOTTOM)
-                 || (Arrow.getType() === PokoGame.ARROW_BOTTOM && Object.getDirection() === PokoGame.ARROW_UP);
-
     }
- };
+};
 
 var Sprite = function(x, y, width, height)
 {
@@ -77,12 +42,6 @@ var Sprite = function(x, y, width, height)
     this.y = y;
     this.width = width;
     this.height= height;
-    
-    this.toJSON = function()
-    {
-        var position = PokoGame.board.getClickedXY(this.x, this.y);
-        return {"x": position.x, "y":position.y};
-    }
 
     this.intersectsPoint = function(testX, testY)
     {
@@ -104,37 +63,36 @@ var Sprite = function(x, y, width, height)
             && this.intersectsPoint(testX+testWidth, testY+testHeight);                  
     };   
     
-    this.isCloseToRect = function(testX, testY, testWidth, testHeight, widthPercentage)
+    this.isCloseToRect = function(testX, testY, testWidth, testHeight)
     {
-        var distance = widthPercentage * this.width;
         return Math.sqrt(Math.pow(Math.abs(this.x-testX),2) 
-                       + Math.pow(Math.abs(this.y-testY), 2)) < distance
+                       + Math.pow(Math.abs(this.y-testY), 2)) < this.width/2
                && Math.sqrt(Math.pow(Math.abs( (this.x+this.width)-(testX+testWidth) ),2) 
-                       + Math.pow(Math.abs(this.y-testY), 2)) < distance
+                       + Math.pow(Math.abs(this.y-testY), 2)) < this.width/2
                && Math.sqrt(Math.pow(Math.abs( (this.x+this.width)-(testX+testWidth) ),2) 
-                       + Math.pow(Math.abs( (this.y+this.height)-(testY+testHeight) ), 2)) < distance
+                       + Math.pow(Math.abs( (this.y+this.height)-(testY+testHeight) ), 2)) < this.width/2
                && Math.sqrt(Math.pow(Math.abs( (this.x)-(testX) ),2) 
-                       + Math.pow(Math.abs( (this.y+this.height)-(testY+testHeight) ), 2)) < distance;  
+                       + Math.pow(Math.abs( (this.y+this.height)-(testY+testHeight) ), 2)) < this.width/2    
     };
     
     this.getWidth = function()
     {
-        return this.width;
+        return width;
     };
     
     this.getHeight = function()
     {
-        return this.height;
+        return height;
     };
     
     this.getX = function()
     {
-        return this.x;
+        return x;
     };
     
     this.getY = function()
     {
-        return this.y;
+        return y;
     };
 
     this.drawIntersection = function(testX, testY, testWidth, testHeight)
@@ -205,7 +163,6 @@ var Arrow = function(x, y, width, height, arrowType)
     this.height= (height=== null) ? 50 : height;
     var img = new Image();
     var type= arrowType;
-    var lives = 2;
 
     if(type === PokoGame.ARROW_LEFT)
     {
@@ -223,26 +180,12 @@ var Arrow = function(x, y, width, height, arrowType)
     {
         img.src = PokoGame.imagesDir+"/arrow_bottom.png";
     }
-    else if(type === PokoGame.ARROW_REVERSED)
-    {
-        img.src = PokoGame.imagesDir+"/arrow_reversed.png";
-    }
 
     this.draw = function()
     {
         try
         {
-            var offset = 0;
-            if (lives === 2) 
-            {
-               offset = this.width * 0.02;
-            }
-            else if (lives === 1)
-            {
-               offset = this.width * 0.15;
-            }
-            PokoGame.ctx.drawImage(img, this.x + offset, this.y + offset, this.width - 2*offset, this.height - 2*offset);
-                
+            PokoGame.ctx.drawImage(img, this.x, this.y, this.width, this.height);
         } 
         catch(DOMException) {}
     };
@@ -251,22 +194,6 @@ var Arrow = function(x, y, width, height, arrowType)
     {
         return type;
     };
-    
-    this.getLives = function()
-    {
-        return lives;
-    };
-   
-    this.decLives = function()
-    {
-        --lives;
-    };
-    
-    this.reset = function()
-    {
-       lives = 2; 
-    };
-    
 };
 
 var Hole = function(x, y, width, height)
@@ -307,7 +234,7 @@ var Rocket = function(x, y, width, height)
         } 
         catch(DOMException) {}
     };
-};
+}
 
 var Mice = function(x, y, width, height)
 {
@@ -333,226 +260,36 @@ var Mice = function(x, y, width, height)
     this.frameWidth  = 100;//parseInt(this.img.width)/this.framesNumber;
     this.directionFrameOffset = 0;
     
-    this.reversedTurning = false;
-    this.turningAlreadyReversed = false;
-    
     this.initialState = {
         "x"    : this.x, 
         "y"    : this.y,
         "dx"   : this.dx,
         "dy"   : this.dy,
-        "speed": this.speed,
-        "reversedTurning": this.reversedTurning
-    };
-    
-    this.toJSON = function()
-    {
-        var position = PokoGame.board.getClickedXY(this.x, this.y);
-        return {"x": position.x, "y": position.y, "direction": this.getDirection()};
-    };
+        "speed": this.speed
+    }
     
     this.setSpeed = function(newSpeed)
     {
         this.speed = newSpeed;
     };
     
-    this.avoidWalls = function()
-    {
-        ptTL = PokoGame.board.getClickedXY(this.x, this.y);
-        if (this.dx > 0)
-        {
-            if (PokoGame.board.getVerticalWall(ptTL.x + 1, ptTL.y))
-            {
-                if (PokoGame.board.getHorizontalWall(ptTL.x, ptTL.y + 1))
-                {
-                    if (!PokoGame.board.getHorizontalWall(ptTL.x, ptTL.y))
-                    {
-                        this.turnLeft();
-                    }
-                    else
-                    {
-                        this.turnRight();
-                        this.turnRight();
-                    }
-                }
-                else
-                {
-                    if(this.reversedTurning && !PokoGame.board.getHorizontalWall(ptTL.x, ptTL.y))
-                    {
-                        this.turnLeft();
-                        this.turningAlreadyReversed = false;
-                    }
-                    else
-                    {
-                        this.turnRight();
-                    } 
-                }
-            }
-            else 
-            {
-                this.turnRight();
-            }
-        } 
-        else if (this.dx < 0)
-        {
-            if (PokoGame.board.getVerticalWall(ptTL.x, ptTL.y))
-            {
-                if (PokoGame.board.getHorizontalWall(ptTL.x, ptTL.y))
-                {
-                    if (!PokoGame.board.getHorizontalWall(ptTL.x, ptTL.y+1))
-                    {
-                        this.turnLeft();
-                    }
-                    else
-                    {
-                        this.turnRight();
-                        this.turnRight();
-                    }
-                }
-                else
-                {
-                    if(this.reversedTurning && !PokoGame.board.getHorizontalWall(ptTL.x, ptTL.y+1))
-                    {
-                        this.turnLeft();
-                        this.turningAlreadyReversed = false;
-                    }
-                    else
-                    {
-                        this.turnRight();
-                    } 
-                }
-            }
-            else 
-            {
-                this.turnRight();
-            }
-        }
-        else if (this.dy > 0)
-        {
-            if (PokoGame.board.getHorizontalWall(ptTL.x, ptTL.y + 1))
-            {
-                if (PokoGame.board.getVerticalWall(ptTL.x, ptTL.y))
-                {
-                    if (!PokoGame.board.getVerticalWall(ptTL.x+1, ptTL.y))
-                    {
-                        this.turnLeft();
-                    }
-                    else
-                    {
-                        this.turnRight();
-                        this.turnRight();
-                    }
-                }
-                else
-                {
-                    if(this.reversedTurning && !PokoGame.board.getVerticalWall(ptTL.x+1, ptTL.y))
-                    {
-                        this.turnLeft();
-
-                    }
-                    else
-                    {
-                        this.turnRight();
-                    }
-                }
-            }
-            else 
-            {
-                this.turnRight();
-
-            }
-        }
-        else if (this.dy < 0)
-        {
-            if (PokoGame.board.getHorizontalWall(ptTL.x, ptTL.y))
-            {
-                if (PokoGame.board.getVerticalWall(ptTL.x + 1, ptTL.y))
-                {
-                    if (!PokoGame.board.getVerticalWall(ptTL.x, ptTL.y))
-                    {
-                        this.turnLeft();
-                    }
-                    else
-                    {
-                        this.turnRight();
-                        this.turnRight();
-                    }
-                }
-                else
-                {
-                    if(this.reversedTurning && !PokoGame.board.getVerticalWall(ptTL.x, ptTL.y))
-                    {
-                        this.turnLeft();
-                    }
-                    else
-                    {
-                        this.turnRight();
-                    }
-                }
-            }
-            else 
-            {
-                this.turnRight();
-            }
-        }
-    };
-    
     this.update = function()
-    {   
-        //next step point top-left
-        ptTL = PokoGame.board.getClickedXY(
-                this.x+this.dx/*+this.margin*/, 
-                this.y+this.dy/*+this.margin*/
-        );
-            
-        //next step point bottom-right  
-        ptBR = PokoGame.board.getClickedXY(
-                this.x+this.width+this.dx/*+this.margin*/, 
-                this.y+this.height+this.dy/*+this.margin*/
-        );
-            
-        //current point top-left
-        currPtTL = PokoGame.board.getClickedXY(
-                this.x/*+this.margin*/, 
-                this.y/*+this.margin*/
-        );
-            
-        //current point bottom-right
-        currPtBR = PokoGame.board.getClickedXY(
-                this.x+this.width/*+this.margin*/, 
-                this.y+this.height/*+this.margin*/
-        );
-        if (currPtTL.x === currPtBR.x && ptTL.x !== ptBR.x)
+    {
+        if(this.dx > 0 && this.x+this.width+this.margin+this.dx >= PokoGame.board.getWidth())
         {
-            if (PokoGame.board.getVerticalWall(ptBR.x, ptBR.y))
-            {
-                this.avoidWalls();
-            }
-          
-        } 
-        else if (currPtTL.y === currPtBR.y && ptTL.y !== ptBR.y)
+            this.goBottom();
+        }    
+        else if(this.dy > 0 && this.y+this.height+this.margin+this.dy >= PokoGame.board.getHeight())
         {
-            if (PokoGame.board.getHorizontalWall(ptBR.x, ptBR.y))
-            {
-                this.avoidWalls();
-            }      
+            this.goLeft();
         }
-        exit = PokoGame.board.isOnBoard(this.x, this.y);
-        if (exit === PokoGame.ARROW_LEFT && this.getDirection() === PokoGame.ARROW_LEFT)
+        else if(this.dx < 0 && this.x+this.dx <= 0)
         {
-            this.x = PokoGame.board.getWidth();
+            this.goUp();
         }
-        else if (exit === PokoGame.ARROW_RIGHT && this.getDirection() === PokoGame.ARROW_RIGHT)
+        else if(this.dy < 0 && this.y+this.dy <= 0)
         {
-            this.x = 0 - this.width;
-        }
-        else if (exit === PokoGame.ARROW_UP && this.getDirection() === PokoGame.ARROW_UP)
-        {
-            this.y = PokoGame.board.getHeight();
-        }
-        else if (exit === PokoGame.ARROW_BOTTOM && this.getDirection() === PokoGame.ARROW_BOTTOM)
-        {   
-            this.y = 0 - this.height;
+            this.goRight();
         }
         this.x += this.dx;
         this.y += this.dy;        
@@ -569,6 +306,7 @@ var Mice = function(x, y, width, height)
 
     this.draw = function()
     {
+        
         PokoGame.ctx.drawImage(
             this.img, 
             (this.currentFrameNumber-1)*this.frameWidth, this.directionFrameOffset, this.frameWidth, this.frameHeight,
@@ -601,7 +339,7 @@ var Mice = function(x, y, width, height)
     {
         this.dx = this.speed;
         this.dy = 0;        
-        this.directionFrameOffset = 0;
+        this.directionFrameOffset = 0
     };
 
     this.goUp = function()
@@ -618,78 +356,9 @@ var Mice = function(x, y, width, height)
         this.directionFrameOffset = 3*this.frameHeight;
     };    
     
-    this.turnRight = function()
-    {
-        if(this.dx > 0 && this.dy === 0)
-        {
-            this.goBottom();
-        }
-        else if(this.dx === 0 && this.dy > 0)
-        {
-            this.goLeft();
-        }
-        else if(this.dx === 0 && this.dy < 0)
-        {
-            this.goRight();
-        }
-        else if(this.dx < 0 && this.dy === 0)
-        {
-            this.goUp();
-        }
-    };
-    
-    this.turnLeft = function() 
-    {
-        if(this.dx > 0 && this.dy === 0)
-        {
-            this.goUp();
-        }
-        else if(this.dx === 0 && this.dy > 0)
-        {
-            this.goRight();
-        }
-        else if(this.dx === 0 && this.dy < 0)
-        {
-            this.goLeft();
-        }
-        else if(this.dx < 0 && this.dy === 0)
-        {
-            this.goBottom();
-        }
-    };
-    
-    this.turnBack = function()
-    {
-        var direction = this.getDirection(this.dx, this.dy);
-        switch(direction)
-        {
-            case PokoGame.ARROW_BOTTOM:
-                this.goUp();
-                break;
-            case PokoGame.ARROW_UP:
-                this.goBottom();
-                break;
-            case PokoGame.ARROW_LEFT:
-                this.goRight();
-                break;
-            case PokoGame.ARROW_RIGHT:
-                this.goLeft();
-                break;
-        }
-        this.turningAlreadyReversed = false;
-    };
-    
     this.getDirection = function(dx, dy)
     {
         var result = null;
-        if(dx === undefined || dx === null)
-        {
-            dx = this.dx;
-        }
-        if(dy === undefined || dy === null)
-        {
-            dy = this.dy;
-        }
         if(dx > 0 && dy === 0)
         {
             result = PokoGame.ARROW_RIGHT;
@@ -707,17 +376,7 @@ var Mice = function(x, y, width, height)
             result = PokoGame.ARROW_UP;
         }
         return result;
-    };
-    
-    this.toggleReversedTurning = function()
-    {
-        if(!this.turningAlreadyReversed)
-        {
-            this.reversedTurning = !this.reversedTurning;
-            this.turningAlreadyReversed = true;
-        }
-    };
-    
+    }
     this.changeDirection = function(direction, saveAsInitial)
     {
         switch(direction)
@@ -751,7 +410,6 @@ var Cat = function(x, y, width, height)
     this.y = y;
     this.width  = width == null ? 30 : width;
     this.height = height == null ? 30 : height;
-
     this.img.src = PokoGame.imagesDir+"/cat.png";
     this.speed = this.width/20;
     this.dx = this.speed;
@@ -817,14 +475,14 @@ var Field = function(x, y, width, height, leftBorder, topBorder, rightBorder, bo
         if(selected)
         {
             PokoGame.ctx.strokeStyle = selectedBorderColor;
-            PokoGame.ctx.lineWidth = 3;
+            PokoGame.ctx.lineWidth = 2;
         }
         else
         {
             PokoGame.ctx.strokeStyle = borderColor;
-            PokoGame.ctx.lineWidth = 3;
+            PokoGame.ctx.lineWidth = 1;
         }    
-        if(PokoGame.board.getVerticalWall(Math.floor(x/width), Math.floor(y/height)) || selected)
+        if(borders.leftBorder || selected)
         {
             PokoGame.ctx.beginPath();
             PokoGame.ctx.moveTo(x, y);
@@ -832,7 +490,7 @@ var Field = function(x, y, width, height, leftBorder, topBorder, rightBorder, bo
             PokoGame.ctx.stroke();
         }
         
-        if(PokoGame.board.getVerticalWall(Math.floor(x/width) + 1, Math.floor(y/height)) || selected)
+        if(borders.rightBorder || selected)
         {
             PokoGame.ctx.beginPath();
             PokoGame.ctx.moveTo(x+width, y);
@@ -840,7 +498,7 @@ var Field = function(x, y, width, height, leftBorder, topBorder, rightBorder, bo
             PokoGame.ctx.stroke();
         }
         
-        if(PokoGame.board.getHorizontalWall(Math.floor(x/width), Math.floor(y/height)) || selected)
+        if(borders.topBorder || selected)
         {
             PokoGame.ctx.beginPath();
             PokoGame.ctx.moveTo(x, y);
@@ -848,7 +506,7 @@ var Field = function(x, y, width, height, leftBorder, topBorder, rightBorder, bo
             PokoGame.ctx.stroke();
         }
         
-        if(PokoGame.board.getHorizontalWall(Math.floor(x/width), Math.floor(y/height) + 1) || selected)
+        if(borders.bottomBorder || selected)
         {
             PokoGame.ctx.beginPath();
             PokoGame.ctx.moveTo(x, y+height);
@@ -930,7 +588,7 @@ var Board = function(width, height, xFields, yFields, boardFields)
     
     var maxWidth = width;
     var maxHeight= height;
-    var fields   = new Array();
+    var fields= null;
     
     var fieldHeight = height/yFields;
     var fieldWidth  = width/xFields;
@@ -938,20 +596,14 @@ var Board = function(width, height, xFields, yFields, boardFields)
     var selectedField = null;
     
     var initialPaint = true;
-    var cacheEnabled = true;
     
-    var leftArrowsAmount    = 0;
-    var rightArrowsAmount   = 0;
-    var upArrowsAmount      = 0;
-    var bottomArrowsAmount  = 0;
-    var reversedArrowsAmount= 0;
+    var leftArrowsAmount = 0;
+    var rightArrowsAmount = 0;
+    var upArrowsAmount = 0;
+    var bottomArrowsAmount = 0;
     
     var isRunning = false;
     var drawingBlocked = false;
-    var isLocked = false;
-    
-    var verticalWalls;
-    var horizontalWalls;
     
     var backgroundTag = document.createElement("canvas");
     backgroundTag.height = maxHeight;
@@ -962,161 +614,44 @@ var Board = function(width, height, xFields, yFields, boardFields)
     var sprites         = new Array();
     var arrows          = new Array();
     var removedSprites  = new Array();
-    var removedArrows   = new Array();
     this.miceAndCats    = new Array();
     this.miceCount = 0;
     this.catCount  = 0;
     
     var quadTree= new QuadTree(0, 0, width, height, 1);
-
-    if(typeof boardFields === Array)
+    
+    if(boardFields === null)
+    {
+        fields = new Array();
+        for(i=0; i<width; i++)
+        {
+            fields[i] = new Array();
+            for(j=0; j<height; j++)
+            {
+                fields[i][j] = new Field(i*fieldWidth, j*fieldHeight, fieldWidth, fieldHeight,
+                                         Math.round(Math.random()),Math.round(Math.random()),
+                                         Math.round(Math.random()),Math.round(Math.random()),
+                                         PokoGame.FIELD_TYPE_EMPTY, (i+j)%2);
+            }
+        }
+    }
+    else if(typeof boardFields === Array)
     {
         fields = boardFields;
     }
-    
-    this.setCacheEnabled = function(enabled)
-    {
-        cacheEnabled = enabled;
-    };
-    
-    this.toJSON = function()
-    {
-        var result = {"xFields": this.getWidth() / fields[0][0].getWidth(), "yFields": this.getHeight() / fields[0][0].getHeight(), "mices": [],
-                "cats": [], "holes": [], "rockets": [], "arrows": {"left": 0, "right": 0,
-                "top": 0, "bottom": 0}, "verticalWalls": [], "horizontalWalls": []};
-
-        for (var x  = 0; x < this.miceAndCats.length; ++x)
-        {
-            if (this.miceAndCats[x] instanceof Mice)
-            {
-                result.mices[result.mices.length] = this.miceAndCats[x].toJSON();
-            }
-            else if (this.miceAndCats[x] instanceof Cat)
-            {
-                result.cats[result.cats.length] = this.miceAndCats[x].toJSON();
-            }
-        }
-        
-        for (var x  = 0; x < sprites.length; ++x)
-        {
-            if (sprites[x] instanceof Rocket)
-            {
-                result.rockets[result.rockets.length] = sprites[x].toJSON();
-            }
-            else if (sprites[x] instanceof Hole)
-            {
-                result.holes[result.holes.length] = sprites[x].toJSON();
-            }
-            else if (sprites[x] instanceof Arrow)
-            {
-                if (sprites[x].getType() === PokGame.ARROW_LEFT) 
-                {
-                    ++result.arrows.left;
-                } 
-                else if (sprites[x].getType() === PokGame.ARROW_RIGHT) 
-                {
-                    ++result.arrows.right;
-                } 
-                else if (sprites[x].getType() === PokGame.ARROW_UP) 
-                {
-                    ++result.arrows.up;
-                } 
-                else if (sprites[x].getType() === PokGame.ARROW_DOWN) 
-                {
-                    ++result.arrows.down;
-                }
-            }
-        }
-        
-        for (var y = 0; y < result.yFields; ++y)
-        {
-            result.verticalWalls[y] = new Array();
-            for (var x = 0; x < result.xFields; ++x)
-            {
-                result.verticalWalls[y][x] = this.getVerticalWall(x, y);
-            }
-        }
-        for (var y = 0; y < result.yFields; ++y)
-        {
-            result.horizontalWalls[y] = new Array();
-            for (var x = 0; x < result.xFields; ++x)
-            {
-                result.horizontalWalls[y][x] = this.getHorizontalWall(x, y);
-            }
-        }
-        return result;
-    };
-    
-    this.isRunning = function()
-    {
-        return isRunning;
-    };
-    
-    this.setInitalPaint = function()
-    {
-        initialPaint = true;  
-    };
     
     this.getWidth = function()
     {
         return width;
     };
-    
-    this.getBoardWidth = function()
-    {
-        return fieldWidth*xFields;
-    };
-    
-    this.getBoardHeight = function()
-    {
-        return fieldHeight*yFields;
-    };
-    
-    this.setHorizontalWall = function(x,y,value)
-    {
-        horizontalWalls[y][x] = value;   
-    };
-    
-    this.setVerticalWall = function(x,y,value)
-    {
-      verticalWalls[y][x] = value;  
-    };
 
-    this.isOnBoard = function (left, top)
+    this.setArrows = function (left, right, up, down)
     {
-        if (left > width)
-        {
-            return PokoGame.ARROW_RIGHT;
-        }
-        if (top > height)
-        {
-            return PokoGame.ARROW_BOTTOM;
-        }        
-        if (left < 0)
-        {
-            return PokoGame.ARROW_LEFT;       
-        }
-        if (top < 0)
-        {
-            return PokoGame.ARROW_UP;       
-        }
-        
-        return 0;
-    };
-    
-    this.setArrows = function(left, right, up, down, reversed)
-    {
-       leftArrowsAmount     = left     === undefined ? 0 : left;
-       rightArrowsAmount    = right    === undefined ? 0 : right;
-       upArrowsAmount       = up       === undefined ? 0 : up;
-       bottomArrowsAmount   = down     === undefined ? 0 : down;
-       reversedArrowsAmount = reversed === undefined ? 0 : reversed;
+       leftArrowsAmount = left;
+       rightArrowsAmount = right;
+       upArrowsAmount = up;
+       bottomArrowsAmount = down;
        this.updateArrowsAmount();
-    };
-    
-    this.setLocked = function(lock)
-    {
-        isLocked = lock;
     };
         
     this.getHeight = function()
@@ -1135,191 +670,130 @@ var Board = function(width, height, xFields, yFields, boardFields)
     this.getClickedField = function(x, y)
     {
         var position = this.getClickedXY(x, y);
-        return fields[position.x][position.y];
+        return fields[position.y][position.x];
     };
     
     this.click = function(x, y)
     {
-        if(!isLocked && x < width && y < height)
+        var position = this.getClickedXY(x, y);
+        if(position.x < 0 || position.x > xFields || position.y < 0 || position.y > yFields)
         {
-            var position = this.getClickedXY(x, y);
-            if(position.x < 0 || position.x > xFields || position.y < 0 || position.y > yFields)
-            {
-                return;
-            }
-            var clicked  = fields[position.x][position.y];
-            if(selectedField === clicked)
+            return;
+        }
+        var clicked  = fields[position.x][position.y];
+        if(selectedField === clicked)
+        {
+            selectedField.unselect();
+            selectedField = null;
+        }
+        else if(clicked !== undefined)
+        {
+            if(selectedField !== null)
             {
                 selectedField.unselect();
-                selectedField = null;
             }
-            else if(clicked !== undefined)
-            {
-                if(selectedField !== null)
-                {
-                    selectedField.unselect();
-                }
-                clicked.select();
-                selectedField = clicked;
-            }    
-        }
+            clicked.select();
+            selectedField = clicked;
+        }    
     };
     
-    this.isPointInBoard = function(x, y)
+    this.keyUp = function(evtNumber)
     {
-        return x < fieldWidth*xFields && y < fieldHeight*yFields;
-    };
-    
-    this.isFieldInBoard = function(x, y)
-    {
-        return x < xFields && y < yFields;
-    };
-    
-    this.addArrow = function(arrow)
-    {
-        var position = this.getClickedXY(arrow.x, arrow.y);
-        if(this.isFieldInBoard(position.x, position.y))
+        var internalFunction = function(evtNumber)
         {
-            arrows[arrows.length] = arrow;
-            fields[position.x][position.y].setSprite(arrow);
-            return true;
-        }
-        return false;
-    };
-    
-    this.deleteArrow = function(arrow)
-    {
-        var position = this.getClickedXY(arrow.x, arrow.y);
-        
-        if(this.isFieldInBoard(position.x, position.y))
-        {        
-            arrows.splice(arrows.indexOf(arrow), 1);
-            sprites.splice(sprites.indexOf(sprites), 1);
-            fields[position.x][position.y].removeSprite();
-            return true;
-        }
-        return false;
-    };
-    
-    this.keyUp = function(evtNumber, event)
-    {
-        if(!isLocked)
-        {
-            var internalFunction = function(evtNumber, event)
+            if(evtNumber === PokoGame.ARROW_BOTTOM || evtNumber === PokoGame.ARROW_LEFT 
+                    || evtNumber === PokoGame.ARROW_RIGHT || evtNumber === PokoGame.ARROW_UP)
             {
-                if(evtNumber === PokoGame.ARROW_BOTTOM || evtNumber === PokoGame.ARROW_LEFT 
-                        || evtNumber === PokoGame.ARROW_RIGHT || evtNumber === PokoGame.ARROW_UP
-                        || evtNumber === PokoGame.ARROW_REVERSED)
+                if(selectedField !== null && !isRunning)
                 {
-                    if(selectedField !== null && !isRunning)
+                    var fieldType = selectedField.getFieldType();
+                    if(fieldType === PokoGame.FIELD_TYPE_EMPTY || fieldType === PokoGame.FIELD_TYPE_ARROW)
                     {
-                        var fieldType = selectedField.getFieldType();
-                        if(fieldType === PokoGame.FIELD_TYPE_EMPTY || fieldType === PokoGame.FIELD_TYPE_ARROW)
+                        prevArrow = selectedField.getSprite();
+                        arrow = new Arrow(
+                                    selectedField.getX(), selectedField.getY(),
+                                    fieldWidth, fieldHeight, evtNumber
+                                );
+
+                        if (prevArrow !== null)
                         {
-                            prevArrow = selectedField.getSprite();
-                            arrow = new Arrow(
-                                        selectedField.getX(), selectedField.getY(),
-                                        fieldWidth, fieldHeight, evtNumber
-                                    );
-
-                            if (prevArrow !== null)
+                            arrows.splice(arrows.indexOf(prevArrow), 1);
+                            selectedField.removeSprite();
+                            if (prevArrow.getType() === PokoGame.ARROW_LEFT)
                             {
-                                arrows.splice(arrows.indexOf(prevArrow), 1);
-                                selectedField.removeSprite();
-                                if (prevArrow.getType() === PokoGame.ARROW_LEFT)
-                                {
-                                    leftArrowsAmount++;
-                                }
-                                else if (prevArrow.getType() === PokoGame.ARROW_RIGHT)
-                                {
-                                    rightArrowsAmount++;
-                                }
-                                else if (prevArrow.getType() === PokoGame.ARROW_UP)
-                                {
-                                    upArrowsAmount++;
-                                }
-                                else if (prevArrow.getType() === PokoGame.ARROW_BOTTOM)
-                                {
-                                    bottomArrowsAmount++;
-                                }
-                                else if(prevArrow.getType() === PokoGame.ARROW_REVERSED)
-                                {
-                                    reversedArrowsAmount++;
-                                }
-                                //below if needet for arrow removing
-                                if(prevArrow.getType() === arrow.getType()) 
-                                {
-                                    return;
-                                }
+                                leftArrowsAmount++;
                             }
-                            if (evtNumber === PokoGame.ARROW_LEFT)
+                            else if (prevArrow.getType() === PokoGame.ARROW_RIGHT)
                             {
-                                if (leftArrowsAmount === 0)
-                                {
-                                    return;
-                                }
-
-                                leftArrowsAmount--;
+                                rightArrowsAmount++;
                             }
-                            else if (evtNumber === PokoGame.ARROW_RIGHT)
+                            else if (prevArrow.getType() === PokoGame.ARROW_UP)
                             {
-                                if (rightArrowsAmount === 0)
-                                {
-                                    return;
-                                }
-
-                                rightArrowsAmount--;
+                                upArrowsAmount++;
                             }
-                            else if (evtNumber === PokoGame.ARROW_BOTTOM)
+                            else if (prevArrow.getType() === PokoGame.ARROW_BOTTOM)
                             {
-                                if (bottomArrowsAmount === 0)
-                                {
-                                    return;
-                                }
-
-                                bottomArrowsAmount--;
+                                bottomArrowsAmount++;
                             }
-                            else if (evtNumber === PokoGame.ARROW_UP)
+                            //below if needet for arrow removing
+                            if(prevArrow.getType() === arrow.getType()) 
                             {
-                                if (upArrowsAmount === 0)
-                                {
-                                    return;
-                                }
-
-                                upArrowsAmount--;
+                                return;
                             }
-                            else if(evtNumber === PokoGame.ARROW_REVERSED)
-                            {
-                                if(reversedArrowsAmount === 0)
-                                {
-                                    return;
-                                }
-
-                                reversedArrowsAmount--;
-                            }
-                            selectedField.setSprite(arrow);
-                            arrows[arrows.length] = arrow;
                         }
-                    }    
-                    if(selectedField !== null && event !== undefined)
-                    {
-                        event.preventDefault();
-                    }
-                }
+                        if (evtNumber === PokoGame.ARROW_LEFT)
+                        {
+                            if (leftArrowsAmount == 0)
+                            {
+                                return;
+                            }
 
-                if(evtNumber === PokoGame.KEY_P)
-                {
-                    PokoGame.board.toggleRunning();
-                }
-                else if(evtNumber === PokoGame.KEY_R)
-                {
-                    PokoGame.board.reset();
-                }   
-            };
-            internalFunction(evtNumber, event);
-            this.updateArrowsAmount();
-            
-        }
+                            leftArrowsAmount--;
+                        }
+                        else if (evtNumber === PokoGame.ARROW_RIGHT)
+                        {
+                            if (rightArrowsAmount == 0)
+                            {
+                                return;
+                            }
+
+                            rightArrowsAmount--;
+                        }
+                        else if (evtNumber === PokoGame.ARROW_BOTTOM)
+                        {
+                            if (bottomArrowsAmount == 0)
+                            {
+                                return;
+                            }
+
+                            bottomArrowsAmount--;
+                        }
+                        else if (evtNumber === PokoGame.ARROW_UP)
+                        {
+                            if (upArrowsAmount == 0)
+                            {
+                                return;
+                            }
+
+                            upArrowsAmount--;
+                        }
+                        selectedField.setSprite(arrow);
+                        arrows[arrows.length] = arrow;
+                    }
+                }                
+            }
+
+            if(evtNumber === PokoGame.KEY_P)
+            {
+                PokoGame.board.toggleRunning();
+            }
+            else if(evtNumber === PokoGame.KEY_R)
+            {
+                PokoGame.board.reset();
+            }   
+        };
+        internalFunction(evtNumber);
+        this.updateArrowsAmount();
     };
     
     this.toggleRunning = function()
@@ -1336,29 +810,11 @@ var Board = function(width, height, xFields, yFields, boardFields)
         for(var i=0; i<removedSprites.length; i++)
         {
             this.miceAndCats[this.miceAndCats.length] = removedSprites[i];
-            if(removedSprites[i] instanceof Cat)
-            {
-                this.catCount++;
-            }
-            else if(removedSprites[i] instanceof Mice)
-            {
-                this.miceCount++;
-            }
-        }
-        for(var i=0; i<removedArrows.length; i++)
-        {
-            arrows[arrows.length] = removedArrows[i];
-            this.getClickedField(removedArrows[i].x, removedArrows[i].y).setSprite(removedArrows[i]);
         }
         removedSprites = new Array();
-        removedArrows  = new Array();
         for(var i=0; i<this.miceAndCats.length; i++)
         {
             this.miceAndCats[i].reset();
-        }
-        for(var i=0; i<arrows.length; i++)
-        {
-            arrows[i].reset();
         }
         
         if(!isRunning)
@@ -1378,10 +834,7 @@ var Board = function(width, height, xFields, yFields, boardFields)
                         leftArrowsAmount++;
                         break;
                     case PokoGame.ARROW_RIGHT:
-                        rightArrowsAmount++;
-                        break;
-                    case PokoGame.ARROW_REVERSED:
-                        reversedArrowsAmount++;
+                        rightArrowsAmount++
                         break;
                 }
             }
@@ -1390,9 +843,9 @@ var Board = function(width, height, xFields, yFields, boardFields)
             {
                 for(var y=0; y<yFields; y++)
                 {
-                    if(fields[x][y].getFieldType() === PokoGame.FIELD_TYPE_ARROW)
+                    if(fields[y][x].getFieldType() == PokoGame.FIELD_TYPE_ARROW)
                     {
-                        fields[x][y].removeSprite();
+                        fields[y][x].removeSprite();
                     }
                 }
             }
@@ -1405,23 +858,12 @@ var Board = function(width, height, xFields, yFields, boardFields)
         this.updateArrowsAmount();
     };
     
-    this.isClean = function()
-    {
-        return (this.miceCount === 0);
-    };
-    
-    this.win = function()
-    {
-         this.nextLevel();  
-    };
-    
     this.updateArrowsAmount = function()
     {
         $("#arrowsLeft").html(leftArrowsAmount);
         $("#arrowsRight").html(rightArrowsAmount);
         $("#arrowsUp").html(upArrowsAmount);
         $("#arrowsDown").html(bottomArrowsAmount);
-        $("#arrowsReversed").html(reversedArrowsAmount);
     };
     
     this.addSprite = function(type, fieldX, fieldY)
@@ -1436,70 +878,32 @@ var Board = function(width, height, xFields, yFields, boardFields)
         sprites[sprites.length] = sprite;
     };
     
-    this.removeSprite = function(fieldX, fieldY)
-    {
-        if(fields.length > fieldX && fields[fieldX].length > fieldY)
-        {
-            var sprite = fields[fieldX][fieldY].getSprite();
-            var indexof = sprites.indexOf(sprite);
-            if (indexof !== -1)
-            {
-                sprites.splice(indexof, 1);
-                fields[fieldX][fieldY].removeSprite();
-            }
-        }
-    };
-    
     this.addMiceOrCat = function(type, fieldX, fieldY, toField) 
     {
         var height = fieldHeight*0.8;
-        var width  = fieldWidth *0.8;
+        var width  = fieldWidth*0.8;
         var x      = (fieldX*fieldWidth)+(Math.abs(fieldWidth-width)/2);
         var y      = (fieldY*fieldHeight)+(Math.abs(fieldHeight-height)/2);
         var sprite = new type(x, y, width, height);
         
-        if(this.isPointInBoard(x, y))
+        if (type === Mice)
         {
-            if (type === Mice)
-            {
-                this.miceCount++;
-            }
-            else if (type === Cat)
-            {
-                this.catCount++;        
-            }
-
-            if(toField === true)
-            {
-                fields[fieldX][fieldY].setSprite(sprite);
-            }
-            else
-            {
-                this.miceAndCats[this.miceAndCats.length] = sprite;
-            }
-            return true;
+            this.miceCount++;
+        }
+        else if (type === Cat)
+        {
+            this.catCount++;        
+        }
+        
+        if(toField === true)
+        {
+            fields[fieldX][fieldY].setSprite(sprite);
         }
         else
         {
-            return false;
+            this.miceAndCats[this.miceAndCats.length] = sprite;
         }
-    };
-    
-    this.getSelectedField = function() 
-    {
-        return selectedField;
-    };
-    
-    this.drawFields = function()
-    {
-        for(var i=0; i<fields.length; i++)
-        {
-            for(var j=0; j<fields[i].length; j++)
-            {
-                fields[i][j].draw();
-            }
-        }        
-    };
+    }
     
     this.draw = function()
     {
@@ -1521,23 +925,19 @@ var Board = function(width, height, xFields, yFields, boardFields)
             PokoGame.ctx.closePath();            
             PokoGame.ctx.drawImage(backgroundTag, 0, 0);
             //end-of needed for clearing on nextLevel() when next board is smaller
-            this.drawFields();//drawing fields on initial paint
-            if(cacheEnabled)
+            for(var i=0; i<fields.length; i++)
             {
-                backgroundCtx.drawImage(document.getElementById('canvas'), 0, 0);//save board in cache
+                for(var j=0; j<fields[i].length; j++)
+                {
+                    fields[i][j].draw();//drawing fields on initial paint
+                }
             }
+            backgroundCtx.drawImage(document.getElementById('canvas'), 0, 0);//save board in cache
             initialPaint = false;
         }
         else
         {
-            if(cacheEnabled)
-            {
-                PokoGame.ctx.drawImage(backgroundTag, 0, 0);//draw board from cache
-            }
-            else
-            {
-                this.drawFields();
-            }
+            PokoGame.ctx.drawImage(backgroundTag, 0, 0);//draw board from cache
             quadTree.clear();
             for(var i=0; i<sprites.length; i++)
             {
@@ -1549,7 +949,7 @@ var Board = function(width, height, xFields, yFields, boardFields)
                 quadTree.add(arrows[i], arrows[i].getX(), arrows[i].getY(),
                                 arrows[i].getX(), arrows[i].getY());
             }
-
+            
             for(i=0; i<this.miceAndCats.length; i++)
             {
                 quadTree.add(this.miceAndCats[i], 
@@ -1558,7 +958,6 @@ var Board = function(width, height, xFields, yFields, boardFields)
                              this.miceAndCats[i].getX(), 
                              this.miceAndCats[i].getY());
             }
-            var endOfGame = false;
             for(var i=0; i<this.miceAndCats.length && isRunning; i++) //available only when isRunnig
             {
                 currSprite = this.miceAndCats[i];
@@ -1566,7 +965,7 @@ var Board = function(width, height, xFields, yFields, boardFields)
                                                            this.miceAndCats[i].y, 
                                                            this.miceAndCats[i].width, 
                                                            this.miceAndCats[i].height);
-
+                
                 for(var j=0; j<closeSprites.length; j++)
                 {
                     if(Object.getPrototypeOf(currSprite) === Object.getPrototypeOf(closeSprites[j]))
@@ -1578,67 +977,40 @@ var Board = function(width, height, xFields, yFields, boardFields)
                     {
                          if (closeSprites[j] instanceof Arrow)
                          {
-                            if (closeSprites[j].containsRect(currSprite.x, currSprite.y,
-                                    currSprite.width, currSprite.height))
+                            if (closeSprites[j].containsRect(currSprite.x, currSprite.y, 
+                                                             currSprite.width, currSprite.height))
                             {
-                                direction = closeSprites[j].getType();
-                                if (currSprite instanceof Cat)
-                                {
-                                    if (PokoGame.isOppositeDirectionToArrow(closeSprites[j], currSprite))
-                                    {
-                                        closeSprites[j].decLives();
-                                        if (closeSprites[j].getLives() === 0)
-                                        {
-                                            var removed = arrows.splice(arrows.indexOf(closeSprites[j]), 1);
-                                            removedArrows[removedArrows.length] = removed[0];
-                                            this.getClickedField(closeSprites[j].x, closeSprites[j].y).removeSprite();
-                                            --j;
-                                        }
-                                    }
-
-                                }
-                                if(direction !== PokoGame.ARROW_REVERSED)
-                                {
-                                    currSprite.changeDirection(direction);
-                                }
-                                else
-                                {
-                                    currSprite.toggleReversedTurning();
-                                }
+                               currSprite.changeDirection(closeSprites[j].getType());
                             }
-
                          }
                          else if (currSprite instanceof Mice)
                          {
                              if(closeSprites[j] instanceof Hole)
                              {
-                                 endOfGame = true;
+                                 clearInterval(PokoGame.timer);
+                                 PokoGame.timer = false;
                                  currSprite.drawIntersection(closeSprites[j].x, closeSprites[j].y, 
                                                           closeSprites[j].width, closeSprites[j].height);
                              }
                              else if (closeSprites[j] instanceof Cat)
                              {
-                                 if(closeSprites[j].isCloseToRect(currSprite.x, currSprite.y, 
-                                                      currSprite.width, currSprite.height, 0.85))
-                                 {
-                                     endOfGame = true;
-                                     currSprite.drawIntersection(closeSprites[j].x, closeSprites[j].y, 
-                                                             closeSprites[j].width, closeSprites[j].height); 
-                                 }
+                                 clearInterval(PokoGame.timer);
+                                 PokoGame.timer = false;
+                                 currSprite.drawIntersection(closeSprites[j].x, closeSprites[j].y, 
+                                                         closeSprites[j].width, closeSprites[j].height); 
                              }
                              else if(closeSprites[j] instanceof Rocket)
                              {
                                 if(closeSprites[j].isCloseToRect(currSprite.x, currSprite.y, 
-                                                      currSprite.width, currSprite.height, 0.25))
+                                                      currSprite.width, currSprite.height))
                                 {
                                     var removed = this.miceAndCats.splice(this.miceAndCats.indexOf(currSprite), 1);
                                     i--;
                                     this.miceCount--;
                                     removedSprites[removedSprites.length] = removed[0];
-                                    if (this.isClean())
+                                    if (this.miceCount == 0)
                                     {
-                                        this.win();
-                                        return;
+                                        this.nextLevel();
                                     }
                                 }
                              }
@@ -1648,7 +1020,7 @@ var Board = function(width, height, xFields, yFields, boardFields)
                              if(closeSprites[j] instanceof Hole)
                              { 
                                 if(closeSprites[j].isCloseToRect(currSprite.x, currSprite.y, 
-                                                      currSprite.width, currSprite.height, 0.25))
+                                                      currSprite.width, currSprite.height))
                                 {                                 
                                     var removed = this.miceAndCats.splice(this.miceAndCats.indexOf(currSprite), 1);
                                     removedSprites[removedSprites.length] = removed[0];
@@ -1657,19 +1029,15 @@ var Board = function(width, height, xFields, yFields, boardFields)
                              }
                              else if(closeSprites[j] instanceof Rocket)
                              {
-                                 endOfGame = true;
+                                 clearInterval(PokoGame.timer);
+                                 PokoGame.timer = false;
                                  currSprite.drawIntersection(closeSprites[j].x, closeSprites[j].y, 
                                                          closeSprites[j].width, closeSprites[j].height);
                              }
                          }
                     }
                 }
-            }
-            if(endOfGame)
-            {
-                clearInterval(PokoGame.timer);
-                PokoGame.timer = false;                
-            }
+            } 
         }
         
         if(selectedField !== null)
@@ -1688,7 +1056,7 @@ var Board = function(width, height, xFields, yFields, boardFields)
         {
             if(isRunning)
             {
-                this.miceAndCats[i].update();
+                this.miceAndCats[i].update()
             }
             this.miceAndCats[i].draw();   
         }
@@ -1697,7 +1065,6 @@ var Board = function(width, height, xFields, yFields, boardFields)
     this.clearAll = function()
     {
         removedSprites      = new Array();
-        removedArrows       = new Array();
         this.miceAndCats    = new Array();
         arrows      = new Array();
         sprites     = new Array();
@@ -1743,8 +1110,8 @@ var Board = function(width, height, xFields, yFields, boardFields)
                     this.miceAndCats[this.miceAndCats.length-1].changeDirection(stage.mices[i].direction, true);
                 }
             }
-            this.miceCount = stage.mices.length;
         }
+        this.miceCount = stage.mices.length;
         
         if(stage.cats !== undefined)
         {
@@ -1756,8 +1123,8 @@ var Board = function(width, height, xFields, yFields, boardFields)
                     this.miceAndCats[this.miceAndCats.length-1].changeDirection(stage.cats[i].direction, true);
                 }
             }
-            this.catCount = stage.cats.length;
         }
+        this.catCount = stage.cats.length;
         
         if(stage.rockets !== undefined)
         {
@@ -1775,56 +1142,12 @@ var Board = function(width, height, xFields, yFields, boardFields)
             }
         }
         
-        if(stage.boardArrows !== undefined)
-        {
-            for(var i=0; i<stage.boardArrows.length; i++)
-            {
-                var x = stage.boardArrows[i].x;
-                var y = stage.boardArrows[i].y;
-                var field = fields[x][y];
-                var arrow = new Arrow(
-                    field.getX(), field.getY(), fieldWidth, 
-                    fieldHeight, stage.boardArrows[i].direction
-                );  
-                    
-                arrows[arrows.length] = arrow;
-            }
-        }
-        
-        if(stage.horizontalWalls !== undefined && stage.horizontalWalls instanceof Array
-                && stage.verticalWalls !== undefined && stage.verticalWalls instanceof Array
-                && stage.horizontalWalls.length > 0 && stage.verticalWalls.length > 0)
-        {
-            verticalWalls = stage.verticalWalls;
-            horizontalWalls = stage.horizontalWalls;
-        }
-        else
-        {
-            verticalWalls   = new Array();
-            horizontalWalls = new Array();
-            
-            for(var y=0; y<yFields; y++)
-            {
-                verticalWalls[y]   = new Array();
-                horizontalWalls[y] = new Array();
-                for(var x=0; x<xFields; x++)
-                {
-                    horizontalWalls[y][x] = 0;
-                    verticalWalls[y][x] = 0;
-                }
-            }
-        }
-        
-        if(stage.arrows !== undefined)
-        {
-            this.setArrows(
-                stage.arrows.left, 
-                stage.arrows.right, 
-                stage.arrows.top, 
-                stage.arrows.bottom,
-                stage.arrows.reversed
-            );
-        }
+        this.setArrows(
+            stage.arrows.left, 
+            stage.arrows.right, 
+            stage.arrows.top, 
+            stage.arrows.bottom
+        );
         
         initialPaint = true;
         drawingBlocked = false;
@@ -1839,7 +1162,6 @@ var Board = function(width, height, xFields, yFields, boardFields)
             $.cookie('currLevel', 1);
         }
         loadLevel($.cookie('currLevel'));
-        
     };
     
     this.nextLevel = function()
@@ -1874,42 +1196,7 @@ var Board = function(width, height, xFields, yFields, boardFields)
                     PokoGame.timer = window.setInterval(PokoGame.draw, PokoGame.FPS);
                 }
             });          
-    };
-    
-    this.getVerticalWall = function(x, y) 
-    {
-        if (x == xFields)
-        {
-          x = 0;       
-        }
-        if (y == yFields)
-        {
-          y = 0;       
-        }
-        
-        if (x > xFields || y > yFields)
-        {
-            return true;        
-        }
-        return verticalWalls[y][x];
-    };
-    
-    this.getHorizontalWall = function(x, y) 
-    {
-        if (x == xFields)
-        {
-          x = 0;       
-        }
-        if (y == yFields)
-        {
-          y = 0;       
-        }
-        if (x > xFields || y > yFields)
-        {
-            return true;        
-        }
-        return horizontalWalls[y][x];
-    };
+    }
 };
 
 
@@ -1926,17 +1213,8 @@ $(document).ready(function()
     
     $('#canvas').click(function(evt)
     {
-        if(evt.which === 3)
-        {
-            return false;
-        }
         PokoGame.board.click(evt.clientX-$(this).offset().left+$(document).scrollLeft(), 
                              evt.clientY-$(this).offset().top+$(document).scrollTop());
-    });
-    
-    $('body').bind("contextmenu", function()
-    {
-       return false; 
     });
     
     $(this).keydown(function(evt)
@@ -1944,7 +1222,7 @@ $(document).ready(function()
         if(!PokoGame.keyDownLock)
         {
             PokoGame.keyDownLock = true;
-            PokoGame.board.keyUp(evt.which, evt);
+            PokoGame.board.keyUp(evt.which);
             PokoGame.keyDownLock = false;
         }
     });
@@ -1959,11 +1237,6 @@ $(document).ready(function()
     {
         $('#buttonStart').attr('disabled', false);
         PokoGame.board.reset();
-    });
-    
-    $('.arrow').click(function()
-    {
-        PokoGame.board.keyUp(PokoGame[$(this).attr('id')]);
     });
 });
 
